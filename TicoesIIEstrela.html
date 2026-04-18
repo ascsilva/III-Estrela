@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exploradores da Natureza</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --verde-escuro: #2d5a27;
+  --verde: #4a8c3f;
+  --verde-claro: #7bc67a;
+  --verde-palido: #d4edda;
+  --amarelo: #f4c430;
+  --cinza-claro: #f5f5e8;
+  --texto: #2c2c1a;
+  --sombra: rgba(45,90,39,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: var(--cinza-claro); color: var(--texto); min-height: 100vh; overflow-x: hidden; }
+
+.nature-bg { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+
+#home-screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; position:relative; z-index:1; padding:1.5rem 1rem 3rem; }
+.home-header { text-align:center; padding:1.5rem 0 2rem; }
+.home-logo { font-size:60px; animation:float 3s ease-in-out infinite; display:block; line-height:1; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.home-title { font-family:'Fredoka One',cursive; font-size:30px; color:var(--verde-escuro); margin-top:0.5rem; }
+.home-sub { font-size:13px; color:var(--verde); font-weight:700; margin-top:0.25rem; }
+.home-sections { width:100%; max-width:840px; }
+.home-section-title { font-family:'Fredoka One',cursive; font-size:17px; color:var(--verde-escuro); margin:1.5rem 0 0.75rem; }
+
+.monitor-card { background:white; border-radius:20px; padding:1.1rem 1.4rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 16px var(--sombra); border:2px solid var(--verde-palido); cursor:pointer; transition:all 0.2s; margin-bottom:0.75rem; }
+.monitor-card:hover { border-color:var(--verde); transform:translateY(-3px); box-shadow:0 8px 24px var(--sombra); }
+.monitor-left { display:flex; align-items:center; gap:1rem; }
+.monitor-avatar { width:50px; height:50px; border-radius:50%; background:var(--verde-palido); display:flex; align-items:center; justify-content:center; font-size:40px; }
+.monitor-info h3 { font-size:16px; font-weight:800; color:var(--verde-escuro); }
+.monitor-info p { font-size:12px; color:#888; }
+.monitor-badge { background:var(--verde-escuro); color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; }
+
+.explorers-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; }
+.explorer-home-card { background:white; border-radius:20px; overflow:hidden; box-shadow:0 4px 16px var(--sombra); cursor:pointer; transition:all 0.2s; border:2px solid transparent; }
+.explorer-home-card:hover { transform:translateY(-4px); box-shadow:0 10px 28px var(--sombra); }
+.explorer-home-top { padding:1.1rem; display:flex; align-items:center; gap:0.85rem; }
+.explorer-ava { width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+.explorer-home-name { font-size:30px; font-weight:800; color:var(--verde-escuro); }
+.explorer-home-stats { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--verde-palido); }
+.stat-cell { padding:0.5rem 0; text-align:center; border-right:1px solid var(--verde-palido); }
+.stat-cell:last-child { border-right:none; }
+.stat-val { font-size:20px; font-weight:900; color:var(--verde-escuro); }
+.stat-lbl { font-size:9px; color:#bbb; font-weight:700; text-transform:uppercase; }
+.insignia-strip { padding:0.55rem 1rem; display:flex; gap:0.4rem; flex-wrap:wrap; border-top:1px solid var(--verde-palido); }
+.badge-pill { padding:3px 9px; border-radius:20px; font-size:10px; font-weight:800; }
+.badge-pill.feita { background:var(--verde-palido); color:var(--verde-escuro); }
+.badge-pill.em-curso { background:#fff3cd; color:#856404; }
+
+.pin-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:200; backdrop-filter:blur(4px); }
+.pin-box { background:white; border-radius:24px; padding:2rem; max-width:300px; width:90%; text-align:center; animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+.pin-title { font-family:'Fredoka One',cursive; font-size:21px; color:var(--verde-escuro); margin-bottom:0.4rem; }
+.pin-sub { font-size:12px; color:#999; margin-bottom:1.25rem; }
+.pin-dots { display:flex; justify-content:center; gap:10px; margin-bottom:1.25rem; }
+.pin-dot { width:17px; height:17px; border-radius:50%; border:2px solid var(--verde); background:white; transition:background 0.15s; }
+.pin-dot.filled { background:var(--verde); }
+.pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.55rem; }
+.pin-btn { padding:0.8rem; border-radius:13px; border:2px solid var(--verde-palido); background:var(--cinza-claro); cursor:pointer; font-family:'Fredoka One',cursive; font-size:20px; transition:all 0.15s; color:var(--texto); }
+.pin-btn:hover { background:var(--verde-palido); border-color:var(--verde); transform:scale(1.08); }
+.pin-btn.del { background:#fee; border-color:#fcc; color:#c44; }
+.pin-error { color:#c44; font-size:12px; margin-top:0.5rem; display:none; animation:shake 0.4s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+.pin-cancel { margin-top:1rem; background:none; border:none; color:#aaa; cursor:pointer; font-size:13px; }
+
+#app { display:none; min-height:100vh; position:relative; z-index:1; }
+.app-header { background:var(--verde-escuro); padding:0.9rem 1.4rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 4px 16px rgba(0,0,0,0.2); }
+.app-header-left { display:flex; align-items:center; gap:0.7rem; }
+.app-header h2 { font-family:'Fredoka One',cursive; font-size:17px; color:white; }
+.header-badge { background:var(--amarelo); color:var(--verde-escuro); padding:3px 11px; border-radius:20px; font-size:11px; font-weight:800; }
+.btn-back { background:rgba(255,255,255,0.15); border:none; color:white; padding:6px 13px; border-radius:11px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; }
+.btn-back:hover { background:rgba(255,255,255,0.25); }
+.nav-tabs { display:flex; gap:0.4rem; padding:0.7rem 1rem 0; overflow-x:auto; background:var(--verde-escuro); }
+.nav-tab { background:rgba(255,255,255,0.15); border:none; color:rgba(255,255,255,0.8); padding:7px 14px; border-radius:9px 9px 0 0; cursor:pointer; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; white-space:nowrap; transition:all 0.2s; }
+.nav-tab.active { background:var(--cinza-claro); color:var(--verde-escuro); }
+.nav-tab:hover:not(.active) { background:rgba(255,255,255,0.25); }
+.app-content { padding:1.25rem; max-width:960px; margin:0 auto; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+.section-title { font-family:'Fredoka One',cursive; font-size:19px; color:var(--verde-escuro); margin-bottom:1.1rem; }
+
+.card-form { background:white; border-radius:18px; padding:1.25rem; box-shadow:0 4px 16px var(--sombra); margin-bottom:1.25rem; }
+.form-row { display:flex; align-items:center; gap:1rem; margin-bottom:0.9rem; flex-wrap:wrap; }
+.form-label { font-size:13px; font-weight:700; color:var(--verde-escuro); min-width:100px; }
+.form-input { border:2px solid var(--verde-palido); border-radius:10px; padding:7px 11px; font-family:'Nunito',sans-serif; font-size:13px; background:var(--cinza-claro); }
+.form-input:focus { outline:none; border-color:var(--verde); }
+
+.table-wrap { overflow-x:auto; }
+.avalia-table { width:100%; border-collapse:collapse; }
+.avalia-table th { background:var(--verde-escuro); color:white; padding:9px 10px; text-align:center; font-size:12px; font-weight:700; }
+.avalia-table th:first-child { text-align:left; }
+.avalia-table td { padding:9px 10px; border-bottom:1px solid var(--verde-palido); text-align:center; vertical-align:middle; }
+.avalia-table td:first-child { text-align:left; }
+.avalia-table tr:hover td { background:var(--cinza-claro); }
+.nome-cell { display:flex; align-items:center; gap:0.6rem; font-weight:700; font-size:14px; }
+
+.toggle-btn { width:42px; height:25px; border-radius:13px; border:none; cursor:pointer; position:relative; transition:background 0.2s; }
+.toggle-btn.on { background:var(--verde); }
+.toggle-btn.off { background:#ddd; }
+.toggle-btn::after { content:''; position:absolute; width:19px; height:19px; border-radius:50%; background:white; top:3px; transition:left 0.2s; box-shadow:0 1px 4px rgba(0,0,0,0.2); }
+.toggle-btn.on::after { left:20px; }
+.toggle-btn.off::after { left:3px; }
+
+.stars-input { display:flex; gap:1px; }
+.star-btn { font-size:19px; border:none; background:none; cursor:pointer; padding:1px; transition:transform 0.15s; }
+.star-btn:hover { transform:scale(1.2); }
+
+.btn-primary { background:var(--verde); color:white; border:none; border-radius:13px; padding:10px 24px; font-family:'Fredoka One',cursive; font-size:14px; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px var(--sombra); }
+.btn-primary:hover { background:var(--verde-escuro); transform:translateY(-2px); }
+
+.history-item { background:white; border-radius:15px; margin-bottom:0.9rem; overflow:hidden; box-shadow:0 2px 8px var(--sombra); }
+.history-header { padding:0.9rem 1.1rem; display:flex; justify-content:space-between; align-items:center; background:var(--verde-palido); cursor:pointer; font-weight:700; color:var(--verde-escuro); font-size:14px; }
+.history-body { padding:1rem; display:none; }
+
+.insignia-section { background:white; border-radius:18px; padding:1.25rem; box-shadow:0 4px 16px var(--sombra); margin-bottom:1.25rem; }
+.insignia-header { display:flex; align-items:center; gap:0.9rem; margin-bottom:1.1rem; }
+.explorer-tabs { display:flex; gap:0.45rem; flex-wrap:wrap; margin-bottom:1.1rem; }
+.explorer-tab { padding:5px 13px; border-radius:20px; border:2px solid var(--verde-palido); background:white; cursor:pointer; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; transition:all 0.2s; color:var(--texto); }
+.explorer-tab.active { background:var(--verde); color:white; border-color:var(--verde); }
+
+.req-item { display:flex; align-items:flex-start; gap:0.7rem; padding:0.65rem; border-radius:11px; margin-bottom:0.35rem; background:var(--cinza-claro); }
+.req-item.done { background:var(--verde-palido); }
+.req-check { width:25px; height:25px; border-radius:7px; border:2px solid var(--verde); cursor:pointer; background:white; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; transition:all 0.2s; font-weight:800; color:white; }
+.req-check.checked { background:var(--verde); border-color:var(--verde-escuro); }
+.req-check.readonly { cursor:default; }
+.req-text { font-size:13px; line-height:1.5; flex:1; }
+.sub-req { margin-left:1.8rem; margin-top:0.3rem; }
+.sub-req .req-item { background:white; }
+.sub-req .req-item.done { background:#e8f5e9; }
+
+.prog-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:0.9rem; margin-bottom:1.5rem; }
+.prog-card { background:white; border-radius:15px; padding:1rem 0.75rem; text-align:center; box-shadow:0 4px 12px var(--sombra); }
+.prog-emoji { font-size:26px; margin-bottom:0.35rem; }
+.prog-val { font-family:'Fredoka One',cursive; font-size:24px; color:var(--verde-escuro); }
+.prog-lbl { font-size:14px; color:#aaa; font-weight:700; margin-top:1px; }
+.prog-bar-wrap { margin-bottom:0.65rem; }
+.prog-bar-lbl { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:var(--verde-escuro); margin-bottom:4px; }
+.prog-bar { height:12px; background:var(--verde-palido); border-radius:6px; overflow:hidden; }
+.prog-bar-fill { height:100%; background:linear-gradient(90deg,var(--verde-claro),var(--verde)); border-radius:6px; transition:width 0.8s ease; }
+
+.my-history { background:white; border-radius:18px; padding:1.25rem; box-shadow:0 4px 16px var(--sombra); }
+.session-row { display:flex; gap:0.6rem; align-items:center; padding:0.55rem 0; border-bottom:1px solid var(--verde-palido); font-size:13px; }
+.session-date { color:#aaa; min-width:75px; font-size:13px; }
+.mini-badge { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.mini-badge.ok { background:var(--verde-palido); }
+.mini-badge.nok { background:#fee; }
+
+.toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(100px); background:var(--verde-escuro); color:white; padding:11px 22px; border-radius:18px; font-weight:700; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,0.2); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index:999; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="nature-bg">
+  <svg class="tree" style="position:absolute;bottom:0;left:1%;width:110px;height:190px;opacity:0.10" viewBox="0 0 60 100"><polygon points="30,0 60,60 0,60" fill="#2d5a27"/><rect x="25" y="60" width="10" height="40" fill="#2d5a27"/></svg>
+  <svg class="tree" style="position:absolute;bottom:0;left:12%;width:70px;height:140px;opacity:0.10" viewBox="0 0 60 100"><polygon points="30,0 55,50 5,50" fill="#2d5a27"/><rect x="26" y="50" width="8" height="50" fill="#2d5a27"/></svg>
+  <svg class="tree" style="position:absolute;bottom:0;right:3%;width:130px;height:210px;opacity:0.10" viewBox="0 0 60 100"><polygon points="30,0 60,65 0,65" fill="#2d5a27"/><rect x="24" y="65" width="12" height="35" fill="#2d5a27"/></svg>
+  <svg class="tree" style="position:absolute;bottom:0;right:18%;width:80px;height:150px;opacity:0.10" viewBox="0 0 60 100"><polygon points="30,0 55,55 5,55" fill="#2d5a27"/><rect x="26" y="55" width="8" height="45" fill="#2d5a27"/></svg>
+  <svg class="tree" style="position:absolute;bottom:0;left:47%;width:55px;height:110px;opacity:0.10" viewBox="0 0 60 100"><polygon points="30,0 50,45 10,45" fill="#2d5a27"/><rect x="27" y="45" width="6" height="55" fill="#2d5a27"/></svg>
+</div>
+
+<!-- ECRÃ INICIAL -->
+<div id="home-screen">
+  <div class="home-header">
+    <span class="home-logo">🦅</span>
+    <div class="home-title">Exploradores da Natureza</div>
+    <div class="home-sub">Grupo de Exploradores · Adventistas</div>
+  </div>
+  <div class="home-sections">
+    <div class="home-section-title">🌲 Monitor</div>
+    <div class="monitor-card" onclick="openPin()">
+      <div class="monitor-left">
+        <div class="monitor-avatar">🌲</div>
+        <div class="monitor-info"><h3>Entrar como Monitor</h3><p>Registar reuniões, avaliações e insígnias</p></div>
+      </div>
+      <div class="monitor-badge">🔑 PIN</div>
+    </div>
+    <div class="home-section-title">🦊 Exploradores — clica para ver a progressão</div>
+    <div class="explorers-grid" id="home-grid"></div>
+
+    <!-- GRÁFICOS COLAPSÁVEIS -->
+    <!-- PONTUAÇÃO -->
+    <div id="home-points-collapsible" style="margin-top:1.25rem;background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(45,90,39,0.15)">
+      <div onclick="toggleHomePoints()" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#fff3cd;user-select:none">
+        <span style="font-family:'Fredoka One',cursive;font-size:16px;color:#856404">🏆 Pontuação da Equipa</span>
+        <span id="home-points-arrow" style="font-size:18px;color:#856404;transition:transform 0.3s">▼</span>
+      </div>
+      <div id="home-points-body" style="display:none;padding:1.25rem">
+        <div style="font-size:14px;color:#aaa;margin-bottom:1rem;font-weight:700">
+          Presença +2 · Tarefa +2 · Lenço +1 · Comportamento +1 a 5 · Requisito de insígnia +3
+        </div>
+        <div style="position:relative;height:220px"><canvas id="hc-points"></canvas></div>
+      </div>
+    </div>
+
+    <div id="home-charts-collapsible" style="margin-top:1.25rem;background:white;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(45,90,39,0.15)">
+      <div onclick="toggleHomeCharts()" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#d4edda;user-select:none">
+        <span style="font-family:'Fredoka One',cursive;font-size:16px;color:#2d5a27">📈 Gráficos da Equipa</span>
+        <span id="home-charts-arrow" style="font-size:18px;color:#2d5a27;transition:transform 0.3s">▼</span>
+      </div>
+      <div id="home-charts-body" style="display:none;padding:1.25rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem">
+          <div>
+            <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#2d5a27;margin-bottom:0.75rem">📊 Presenças, Tarefas e Lenço</div>
+            <div style="position:relative;height:240px"><canvas id="hc-bar"></canvas></div>
+          </div>
+          <div>
+            <div style="font-family:'Fredoka One',cursive;font-size:14px;color:#2d5a27;margin-bottom:0.75rem">🎯 Progresso das Insígnias</div>
+            <div style="position:relative;height:240px"><canvas id="hc-radar"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN -->
+<div class="pin-overlay" id="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <div class="pin-title">🌲 Monitor</div>
+    <div class="pin-sub">PIN de 4 dígitos</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinPress('0')" style="grid-column:2">0</button>
+      <button class="pin-btn del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pin-error">PIN incorreto. Tenta novamente.</div>
+    <button class="pin-cancel" onclick="closePin()">Cancelar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <div class="app-header-left">
+      <span id="hdr-emoji" style="font-size:22px">🦅</span>
+      <h2 id="hdr-title">Exploradores</h2>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center">
+      <span class="header-badge" id="hdr-badge">Monitor</span>
+      <button class="btn-back" onclick="goHome()">← Início</button>
+    </div>
+  </div>
+  <div class="nav-tabs" id="nav-tabs"></div>
+  <div class="app-content" id="app-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL EDITAR REUNIÃO -->
+<div id="edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:1rem">
+  <div style="background:white;border-radius:22px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--verde-palido);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:1;border-radius:22px 22px 0 0">
+      <div id="edit-title" style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--verde-escuro)">✏️ Editar Reunião</div>
+      <button onclick="closeEditSession()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1">✕</button>
+    </div>
+    <div style="padding:1.25rem">
+      <div class="form-row" style="margin-bottom:1rem">
+        <span class="form-label">📅 Data</span>
+        <input class="form-input" type="date" id="edit-data">
+      </div>
+      <div class="form-row" style="margin-bottom:1.25rem">
+        <span class="form-label">📋 Descrição</span>
+        <input class="form-input" type="text" id="edit-desc" style="flex:1" placeholder="Descrição da reunião">
+      </div>
+      <div class="table-wrap">
+        <table class="avalia-table">
+          <thead><tr><th>Explorador</th><th>📅 Presente</th><th>✅ Tarefa</th><th>🧣 Lenço</th><th>⭐ Comportamento</th></tr></thead>
+          <tbody id="edit-tbody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem">
+        <button onclick="closeEditSession()" style="background:none;border:2px solid var(--verde-palido);border-radius:13px;padding:10px 22px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:#888">Cancelar</button>
+        <button onclick="saveEditSession()" class="btn-primary">💾 Guardar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PIN = '1402';
+
+const EXP = [
+  {id:'ester',   nome:'Ester',   emoji:'🦋', cor:'#f3d7ef'},
+  {id:'miguel',  nome:'Miguel',  emoji:'🦅', cor:'#d0e8f5'},
+  {id:'daniel',  nome:'Daniel',  emoji:'🦊', cor:'#f5e6d0'},
+  {id:'isaac',   nome:'Isaac',   emoji:'🐢', cor:'#d0f5dd'},
+  {id:'gabriel', nome:'Gabriel', emoji:'🦁', cor:'#f5f0d0'},
+  {id:'lucas',   nome:'Lucas',   emoji:'🐬', cor:'#d0eef5'},
+];
+
+const INS = {
+  artista: {
+    nome:'Insígnia de Artista', emoji:'🎨',
+    reqs:[
+      {id:'a1', t:'O que é que um artista faz.', s:[]},
+      {id:'a2', t:'Diz o nome das cores primárias.', s:[
+        {id:'a2a', t:'Mistura essas cores e faz três novas cores.'},
+        {id:'a2b', t:'Utiliza as seis cores e faz um desenho.'},
+      ]},
+      {id:'a3', t:'Demonstra como se devem afiar os lápis e limpar os pincéis.', s:[
+        {id:'a3a', t:'Afia dois lápis.'},
+        {id:'a3b', t:'Utiliza água para limpar os teus pincéis.'},
+      ]},
+      {id:'a4', t:'Faz três desenhos diferentes e utiliza duas técnicas:', s:[
+        {id:'a4a', t:'Pintura com os dedos.'},
+        {id:'a4b', t:'Lápis de cor, lápis de cera ou giz.'},
+        {id:'a4c', t:'Caneta, lápis de carvão ou carvão vegetal.'},
+      ]},
+      {id:'a5', t:'Aprende uma técnica de arte e demonstra duas atividades:', s:[
+        {id:'a5a', t:'Carimbo feito numa batata.'},
+        {id:'a5b', t:'Stencil.'},
+        {id:'a5c', t:'Pasta de papel.'},
+        {id:'a5d', t:'Em maçapão ou noutro material para modelar.'},
+        {id:'a5e', t:'Um mapa em relevo.'},
+      ]},
+      {id:'a6', t:'Faz duas das seguintes propostas:', s:[
+        {id:'a6a', t:'Um convite.'},
+        {id:'a6b', t:'Um marca-páginas.'},
+        {id:'a6c', t:'Um cartão de felicitações.'},
+        {id:'a6d', t:'Um póster.'},
+      ]},
+    ]
+  },
+  estrela3: {
+    nome:'3ª Estrela', emoji:'⭐',
+    reqs:[
+      {id:'e1', t:'À descoberta da Bíblia', s:[
+        {id:'e1a', t:'Recito o Salmo 23.'},
+        {id:'e1b', t:'Recito Mateus 6:9-13.'},
+        {id:'e1c', t:'Recito Êxodo 20:3-17.'},
+        {id:'e1d', t:'Recito João 14:1-3.'},
+        {id:'e1e', t:'Conto ao clube o episódio da vida de Jesus de que gosto mais.'},
+      ]},
+      {id:'e2', t:'Discipulado', s:[
+        {id:'e2a', t:'Li "O Grande Conflito… Porquê?" e realizei os exercícios.'},
+      ]},
+      {id:'e3', t:'Serviço / Missão', s:[
+        {id:'e3a', t:'Participei num programa de ação social da minha Igreja.'},
+      ]},
+      {id:'e4', t:'Percurso JA', s:[
+        {id:'e4a', t:'Tenho duas novas especialidades: uma em Artes e Ofícios e outra em Desporto.'},
+      ]},
+      {id:'e5', t:'Técnicas JA / Nós', s:[
+        {id:'e5a', t:'Nó Torto.'},
+        {id:'e5b', t:'Nó Escota.'},
+        {id:'e5c', t:'Nó Corrediço.'},
+        {id:'e5d', t:'Nó Lais de Guia (de salvamento).'},
+        {id:'e5e', t:'Nó Catau.'},
+        {id:'e5f', t:'Nó Espia / Fateixa.'},
+      ]},
+      {id:'e6', t:'Técnicas JA / Jogos de Pista', s:[
+        {id:'e6a', t:'Reconheço os sinais e sei as regras de um jogo de pista.'},
+      ]},
+      {id:'e7', t:'Técnicas JA / Orientação', s:[
+        {id:'e7a', t:'Encontro com ou sem bússola os pontos cardeais e colaterais.'},
+      ]},
+      {id:'e8', t:'Desenvolvimento Físico', s:[
+        {id:'e8a', t:'Salto em altura (registo de resultado).'},
+        {id:'e8b', t:'Salto em comprimento (registo de resultado).'},
+        {id:'e8c', t:'Corrida 50 m (registo de resultado).'},
+        {id:'e8d', t:'Organizo um jogo desportivo.'},
+        {id:'e8e', t:'Corro a distância de 1 km.'},
+        {id:'e8f', t:'Faço um percurso de 10 km de bicicleta.'},
+      ]},
+      {id:'e9', t:'Estudo da Natureza / Herbário', s:[
+        {id:'e9a', t:'5 árvores.'},
+        {id:'e9b', t:'3 flores selvagens.'},
+        {id:'e9c', t:'2 plantas medicinais da minha região.'},
+      ]},
+      {id:'e10', t:'Vida Prática', s:[
+        {id:'e10a', t:'Lavo e passo a ferro a minha camisa.'},
+        {id:'e10b', t:'Sei pregar um botão.'},
+        {id:'e10c', t:'Colaboro na limpeza e arrumação da sede do clube.'},
+        {id:'e10d', t:'Sei preparar uma refeição ligeira.'},
+      ]},
+    ]
+  }
+};
+
+const S = {
+  perfil: null, expId: null, pinBuf: '',
+  sessions: [{
+    data:'2025-03-01', desc:'Reunião de abertura',
+    av:{
+      ester:{p:true,t:true,l:true,c:5},
+      miguel:{p:true,t:true,l:false,c:4},
+      daniel:{p:true,t:false,l:true,c:3},
+      isaac:{p:false,t:false,l:false,c:0},
+      gabriel:{p:true,t:true,l:true,c:5},
+      lucas:{p:true,t:false,l:true,c:4},
+    }
+  }],
+  ins: {}
+};
+
+// Init insígnias
+EXP.forEach(e => {
+  S.ins[e.id] = {artista:{}, estrela3:{}};
+  ['artista','estrela3'].forEach(k => {
+    INS[k].reqs.forEach(r => {
+      S.ins[e.id][k][r.id] = false;
+      r.s.forEach(sub => { S.ins[e.id][k][sub.id] = false; });
+    });
+  });
+});
+
+// --- HOME ---
+let hcBarInstance = null, hcRadarInstance = null, hcActiveTab = 'barras';
+
+function renderHome() {
+  const g = document.getElementById('home-grid');
+  g.innerHTML = '';
+  EXP.forEach(exp => {
+    const st = stats(exp.id);
+    const pA = prog(exp.id,'artista'), pE = prog(exp.id,'estrela3');
+    const pts = calcPontos(exp.id);
+    const c = document.createElement('div');
+    c.className = 'explorer-home-card';
+    c.style.borderColor = exp.cor;
+    c.innerHTML = `
+      <div class="explorer-home-top">
+        <div class="explorer-ava" style="background:${exp.cor}">${exp.emoji}</div>
+        <div style="flex:1"><div class="explorer-home-name">${exp.nome}</div><div style="font-size:10px;color:#ccc;margin-top:1px">Explorador</div></div>
+        <div style="background:#fff3cd;border:2px solid #f4c430;border-radius:12px;padding:4px 10px;text-align:center">
+          <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#856404;line-height:1">${pts}</div>
+          <div style="font-size:9px;color:#b8860b;font-weight:700">pts</div>
+        </div>
+      </div>
+      <div class="explorer-home-stats">
+        <div class="stat-cell"><div class="stat-val">${st.p}</div><div class="stat-lbl">📅</div></div>
+        <div class="stat-cell"><div class="stat-val">${st.t}</div><div class="stat-lbl">✅</div></div>
+        <div class="stat-cell"><div class="stat-val">${st.l}</div><div class="stat-lbl">🧣</div></div>
+        <div class="stat-cell"><div class="stat-val">${st.c}</div><div class="stat-lbl">⭐</div></div>
+      </div>
+      <div class="insignia-strip">
+        <span class="badge-pill feita" onclick="event.stopPropagation();enterExp('${exp.id}','natacao')" style="cursor:pointer">🏊 ✓</span>
+        <span class="badge-pill em-curso" onclick="event.stopPropagation();enterExp('${exp.id}','artista')" style="cursor:pointer">🎨 ${pA}%</span>
+        <span class="badge-pill em-curso" onclick="event.stopPropagation();enterExp('${exp.id}','estrela3')" style="cursor:pointer">⭐ ${pE}%</span>
+      </div>`;
+    c.onclick = () => enterExp(exp.id);
+    g.appendChild(c);
+  });
+  // se os painéis já estiverem abertos, atualiza
+  if(homeChartsOpen) renderHomeCharts();
+  if(homePointsOpen) renderHomePoints();
+}
+
+function calcPontos(id) {
+  let total = 0;
+  S.sessions.forEach(s => {
+    const a = s.av[id]; if(!a) return;
+    if(a.p) total += 2;
+    if(a.t) total += 2;
+    if(a.l) total += 1;
+    if(a.p && a.c > 0) total += a.c;
+  });
+  // insígnias: natação = todos já têm (contamos os requisitos marcados)
+  const insTotal = Object.values(S.ins[id]?.artista || {}).filter(Boolean).length
+                 + Object.values(S.ins[id]?.estrela3 || {}).filter(Boolean).length;
+  // natação concluída = todos têm, contar como requisitos feitos (valor fixo: 1 req)
+  total += 3; // natação
+  total += insTotal * 3;
+  return total;
+}
+
+let homePointsOpen = false, hcPointsInstance = null;
+
+function toggleHomePoints() {
+  homePointsOpen = !homePointsOpen;
+  const body  = document.getElementById('home-points-body');
+  const arrow = document.getElementById('home-points-arrow');
+  if(!body) return;
+  body.style.display = homePointsOpen ? 'block' : 'none';
+  if(arrow) arrow.style.transform = homePointsOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  if(homePointsOpen) renderHomePoints();
+}
+
+function renderHomePoints() {
+  if(hcPointsInstance) { hcPointsInstance.destroy(); hcPointsInstance = null; }
+  const ctx = document.getElementById('hc-points'); if(!ctx) return;
+
+  const pontos = EXP.map(e => calcPontos(e.id));
+  const max = Math.max(...pontos);
+  const cores = EXP.map((e, i) => {
+    const p = pontos[i];
+    if(p === max) return '#f4c430'; // ouro para o líder
+    return e.cor;
+  });
+  const bordas = EXP.map((e, i) => pontos[i] === max ? '#b8860b' : '#aaa');
+
+  hcPointsInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: EXP.map(e => e.emoji + ' ' + e.nome),
+      datasets: [{
+        label: 'Pontos',
+        data: pontos,
+        backgroundColor: cores,
+        borderColor: bordas,
+        borderWidth: 2,
+        borderRadius: 10,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.raw + ' pontos'
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { font: { family: 'Nunito', size: 11 }, stepSize: 5 },
+          grid: { color: '#f0f0e8' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Nunito', weight: '700', size: 13 } }
+        }
+      }
+    }
+  });
+}
+
+let homeChartsOpen = false;
+
+function toggleHomeCharts() {
+  homeChartsOpen = !homeChartsOpen;
+  const body  = document.getElementById('home-charts-body');
+  const arrow = document.getElementById('home-charts-arrow');
+  if(!body) return;
+  body.style.display = homeChartsOpen ? 'block' : 'none';
+  if(arrow) arrow.style.transform = homeChartsOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  if(homeChartsOpen) renderHomeCharts();
+}
+
+function renderHomeCharts() {
+  if(hcBarInstance)   { hcBarInstance.destroy();   hcBarInstance = null; }
+  if(hcRadarInstance) { hcRadarInstance.destroy(); hcRadarInstance = null; }
+
+  const nomes = EXP.map(e => e.nome);
+  const cores = ['#f3d7ef','#d0e8f5','#f5e6d0','#d0f5dd','#f5f0d0','#d0eef5'];
+  const bordas = ['#c47ab0','#4a90d9','#d4924a','#4ab86e','#c4b84a','#4ab8d4'];
+
+  const ctxBar = document.getElementById('hc-bar');
+  if(ctxBar) {
+    hcBarInstance = new Chart(ctxBar, {
+      type:'bar',
+      data:{
+        labels:nomes,
+        datasets:[
+          {label:'📅 Presenças', data:EXP.map(e=>stats(e.id).p), backgroundColor:'#d4edda', borderColor:'#4a8c3f', borderWidth:2, borderRadius:7},
+          {label:'✅ Tarefas',   data:EXP.map(e=>stats(e.id).t), backgroundColor:'#d0e8f5', borderColor:'#4a90d9', borderWidth:2, borderRadius:7},
+          {label:'🧣 Lenço',    data:EXP.map(e=>stats(e.id).l), backgroundColor:'#fff3cd', borderColor:'#e8882a', borderWidth:2, borderRadius:7},
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Nunito',weight:'700',size:11},padding:14,boxWidth:14}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{family:'Nunito',weight:'700',size:11}}},
+          y:{beginAtZero:true,ticks:{stepSize:1,font:{family:'Nunito',size:10}},grid:{color:'#f0f0e8'}}
+        }
+      }
+    });
+  }
+
+  const ctxRadar = document.getElementById('hc-radar');
+  if(ctxRadar) {
+    hcRadarInstance = new Chart(ctxRadar, {
+      type:'radar',
+      data:{
+        labels:['🏊 Natação','🎨 Artista','⭐ 3ª Estrela'],
+        datasets:EXP.map((e,i)=>({
+          label:e.nome,
+          data:[100, prog(e.id,'artista'), prog(e.id,'estrela3')],
+          backgroundColor:cores[i]+'66',
+          borderColor:bordas[i],
+          borderWidth:2,
+          pointBackgroundColor:bordas[i],
+          pointRadius:4,
+        }))
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{font:{family:'Nunito',weight:'700',size:11},padding:12,boxWidth:12}}},
+        scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{family:'Nunito',size:9},backdropColor:'transparent'},grid:{color:'#e0e8d8'},pointLabels:{font:{family:'Nunito',weight:'700',size:11}}}}
+      }
+    });
+  }
+}
+
+// --- PIN ---
+function openPin() {
+  S.pinBuf = ''; updDots();
+  document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+function closePin() { document.getElementById('pin-overlay').style.display = 'none'; }
+function updDots() { for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled', i < S.pinBuf.length); }
+function pinPress(d) {
+  if(S.pinBuf.length >= 4) return;
+  S.pinBuf += d; updDots();
+  if(S.pinBuf.length === 4) {
+    setTimeout(() => {
+      if(S.pinBuf === PIN) { closePin(); enterMonitor(); }
+      else { document.getElementById('pin-error').style.display='block'; S.pinBuf=''; updDots(); }
+    }, 200);
+  }
+}
+function pinDel() { S.pinBuf=S.pinBuf.slice(0,-1); updDots(); document.getElementById('pin-error').style.display='none'; }
+
+// --- NAVEGAÇÃO ---
+function goHome() {
+  S.perfil=null; S.expId=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('home-screen').style.display='flex';
+  renderHome();
+}
+
+function setHeader(emoji, title, badge) {
+  document.getElementById('hdr-emoji').textContent = emoji;
+  document.getElementById('hdr-title').textContent = title;
+  document.getElementById('hdr-badge').textContent = badge;
+  document.getElementById('home-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+let tabCallbacks = {};
+function buildTabs(tabs) {
+  const nav = document.getElementById('nav-tabs');
+  const cnt = document.getElementById('app-content');
+  nav.innerHTML = ''; cnt.innerHTML = '';
+  tabCallbacks = {};
+  tabs.forEach((t,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-tab'+(i===0?' active':'');
+    btn.textContent = t.lbl;
+    btn._tabId = t.id;
+    btn.onclick = () => {
+      document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      showTab(t.id);
+      if(tabCallbacks[t.id]) { tabCallbacks[t.id](); delete tabCallbacks[t.id]; }
+    };
+    nav.appendChild(btn);
+    const p = document.createElement('div');
+    p.className = 'tab-panel'+(i===0?' active':'');
+    p.id = 'tp-'+t.id;
+    cnt.appendChild(p);
+  });
+}
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('tp-'+id);
+  if(el) el.classList.add('active');
+}
+
+// --- MONITOR ---
+let curSess = {data:'', desc:'', av:{}};
+let monInsExp = EXP[0].id, monInsKey = 'artista';
+
+function enterMonitor() {
+  S.perfil='monitor';
+  setHeader('🌲','Painel do Monitor','Monitor');
+  buildTabs([
+    {id:'visao', lbl:'📊 Visão Geral'},
+    {id:'graficos', lbl:'📈 Gráficos'},
+    {id:'reuniao', lbl:'📝 Nova Reunião'},
+    {id:'insignias', lbl:'🏅 Insígnias'},
+    {id:'historico', lbl:'📅 Histórico'},
+  ]);
+  rVisao(); rReuniao(); rInsignias(); rHistorico();
+  tabCallbacks['graficos'] = () => rGraficosMonitor();
+  showTab('visao');
+}
+
+function rVisao() {
+  const el = document.getElementById('tp-visao'); if(!el) return;
+  let h = `<div class="section-title">📊 Visão Geral</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem">`;
+  EXP.forEach(e => {
+    const st = stats(e.id), pA = prog(e.id,'artista'), pE = prog(e.id,'estrela3');
+    h += `<div style="background:white;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px var(--sombra);border-left:5px solid ${e.cor}">
+      <div style="padding:1rem 1.1rem;display:flex;align-items:center;gap:0.8rem">
+        <div style="width:46px;height:46px;border-radius:50%;background:${e.cor};display:flex;align-items:center;justify-content:center;font-size:24px">${e.emoji}</div>
+        <div style="font-size:16px;font-weight:800;color:var(--verde-escuro)">${e.nome}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--verde-palido)">
+        <div class="stat-cell"><div class="stat-val">${st.p}</div><div class="stat-lbl">📅 Pres.</div></div>
+        <div class="stat-cell"><div class="stat-val">${st.t}</div><div class="stat-lbl">✅ Tar.</div></div>
+        <div class="stat-cell"><div class="stat-val">${st.l}</div><div class="stat-lbl">🧣 Lenço</div></div>
+        <div class="stat-cell"><div class="stat-val">${st.c}</div><div class="stat-lbl">⭐ Comp.</div></div>
+      </div>
+      <div style="padding:0.7rem 1rem;border-top:1px solid var(--verde-palido)">
+        <div class="prog-bar-wrap" style="margin-bottom:0.4rem">
+          <div class="prog-bar-lbl" style="font-size:11px"><span>🎨 Artista</span><span>${pA}%</span></div>
+          <div class="prog-bar"><div class="prog-bar-fill" style="width:${pA}%"></div></div>
+        </div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar-lbl" style="font-size:11px"><span>⭐ 3ª Estrela</span><span>${pE}%</span></div>
+          <div class="prog-bar"><div class="prog-bar-fill" style="width:${pE}%"></div></div>
+        </div>
+      </div>
+    </div>`;
+  });
+  h += `</div>`;
+  el.innerHTML = h;
+}
+
+function initCurSess() {
+  curSess.data = new Date().toISOString().split('T')[0];
+  curSess.desc = '';
+  curSess.av = {};
+  EXP.forEach(e => { curSess.av[e.id] = {p:true,t:false,l:false,c:3}; });
+}
+
+function rReuniao() {
+  initCurSess();
+  const el = document.getElementById('tp-reuniao'); if(!el) return;
+  el.innerHTML = `
+  <div class="section-title">📝 Registar Reunião</div>
+  <div class="card-form">
+    <div class="form-row">
+      <span class="form-label">📅 Data</span>
+      <input class="form-input" type="date" id="sd" value="${curSess.data}" onchange="curSess.data=this.value">
+    </div>
+    <div class="form-row">
+      <span class="form-label">📋 Descrição</span>
+      <input class="form-input" type="text" id="sdesc" placeholder="Ex: Jogos de pista" style="flex:1" oninput="curSess.desc=this.value">
+    </div>
+  </div>
+  <div class="card-form">
+    <div class="table-wrap">
+      <table class="avalia-table">
+        <thead><tr><th>Explorador</th><th>📅 Presente</th><th>✅ Tarefa</th><th>🧣 Lenço</th><th>⭐ Comportamento</th></tr></thead>
+        <tbody id="atbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:1.25rem;text-align:right">
+      <button class="btn-primary" onclick="guardar()">💾 Guardar</button>
+    </div>
+  </div>`;
+  rRows();
+}
+
+function rRows() {
+  const tb = document.getElementById('atbody'); if(!tb) return;
+  tb.innerHTML = '';
+  EXP.forEach(e => {
+    const a = curSess.av[e.id];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="nome-cell"><span style="font-size:18px">${e.emoji}</span>${e.nome}</div></td>
+      <td><button class="toggle-btn ${a.p?'on':'off'}" id="tp${e.id}" onclick="tog('${e.id}','p','tp${e.id}')"></button></td>
+      <td><button class="toggle-btn ${a.t?'on':'off'}" id="tt${e.id}" onclick="tog('${e.id}','t','tt${e.id}')"></button></td>
+      <td><button class="toggle-btn ${a.l?'on':'off'}" id="tl${e.id}" onclick="tog('${e.id}','l','tl${e.id}')"></button></td>
+      <td><div class="stars-input" id="st${e.id}">${starsH(e.id,a.c)}</div></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function tog(id, k, btnId) {
+  curSess.av[id][k] = !curSess.av[id][k];
+  const b = document.getElementById(btnId);
+  if(b) b.className = 'toggle-btn '+(curSess.av[id][k]?'on':'off');
+}
+function starsH(id, v) {
+  let h='';
+  for(let i=1;i<=5;i++) h+=`<button class="star-btn" onclick="setStar('${id}',${i})">${i<=v?'⭐':'☆'}</button>`;
+  return h;
+}
+function setStar(id, v) { curSess.av[id].c=v; const c=document.getElementById('st'+id); if(c) c.innerHTML=starsH(id,v); }
+
+function guardar() {
+  S.sessions.unshift({ data:curSess.data||new Date().toISOString().split('T')[0], desc:curSess.desc||'Reunião', av:JSON.parse(JSON.stringify(curSess.av)) });
+  toast('✅ Reunião guardada!');
+  rVisao(); rHistorico(); renderHome();
+  initCurSess(); rRows();
+  const d=document.getElementById('sdesc'); if(d) d.value='';
+}
+
+function rInsignias() {
+  const el = document.getElementById('tp-insignias'); if(!el) return;
+  const k = monInsKey;
+  let h = `<div class="section-title">🏅 Insígnias</div>`;
+
+  // sub-tabs insígnia
+  h += `<div style="display:flex;gap:0.65rem;margin-bottom:1.1rem">
+    <button onclick="monInsKey='artista';rInsignias()" style="padding:7px 16px;border-radius:20px;border:2px solid ${k==='artista'?'var(--verde)':'var(--verde-palido)'};background:${k==='artista'?'var(--verde)':'white'};color:${k==='artista'?'white':'var(--texto)'};cursor:pointer;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700">🎨 Artista</button>
+    <button onclick="monInsKey='estrela3';rInsignias()" style="padding:7px 16px;border-radius:20px;border:2px solid ${k==='estrela3'?'var(--verde)':'var(--verde-palido)'};background:${k==='estrela3'?'var(--verde)':'white'};color:${k==='estrela3'?'white':'var(--texto)'};cursor:pointer;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700">⭐ 3ª Estrela</button>
+  </div>`;
+
+  // selector explorador
+  h += `<div class="explorer-tabs">`;
+  EXP.forEach(e => { h += `<button class="explorer-tab ${e.id===monInsExp?'active':''}" onclick="monInsExp='${e.id}';rInsignias()">${e.emoji} ${e.nome}</button>`; });
+  h += `</div>`;
+
+  // Natação
+  h += `<div class="insignia-section" style="border-left:4px solid var(--verde-claro)">
+    <div class="insignia-header">
+      <div style="font-size:34px">🏊</div>
+      <div><div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--verde-escuro)">Insígnia de Natação</div>
+      <div style="font-size:12px;color:var(--verde);font-weight:700">✅ Concluída por todos</div></div>
+      <span style="margin-left:auto;font-size:30px">🏆</span>
+    </div>
+  </div>`;
+
+  // Editor insígnia
+  const ins = INS[k];
+  const pr = prog(monInsExp, k);
+  const tot = countR(k);
+  const dn = Math.round(pr * tot / 100);
+
+  h += `<div class="insignia-section">
+    <div class="insignia-header">
+      <div style="font-size:34px">${ins.emoji}</div>
+      <div style="flex:1">
+        <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--verde-escuro)">${ins.nome}</div>
+        <div style="font-size:12px;color:#aaa">${dn} / ${tot} requisitos</div>
+        <div class="prog-bar" style="margin-top:5px;max-width:200px"><div class="prog-bar-fill" style="width:${pr}%"></div></div>
+      </div>
+      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--verde)">${pr}%</div>
+    </div>`;
+
+  ins.reqs.forEach((r, ri) => {
+    const chk = S.ins[monInsExp][k][r.id];
+    h += `<div class="req-item ${chk?'done':''}">
+      <div class="req-check ${chk?'checked':''}" onclick="togR('${k}','${monInsExp}','${r.id}')">${chk?'✓':''}</div>
+      <div class="req-text"><strong>${ri+1}. ${r.t}</strong>${r.s.length?`<span style="font-size:10px;color:#bbb;margin-left:6px">(${r.s.length} sub-itens)</span>`:''}</div>
+    </div>`;
+    if(r.s.length) {
+      h += `<div class="sub-req">`;
+      r.s.forEach(sub => {
+        const sc = S.ins[monInsExp][k][sub.id];
+        h += `<div class="req-item ${sc?'done':''}">
+          <div class="req-check ${sc?'checked':''}" onclick="togR('${k}','${monInsExp}','${sub.id}')">${sc?'✓':''}</div>
+          <div class="req-text">${sub.t}</div>
+        </div>`;
+      });
+      h += `</div>`;
+    }
+  });
+  h += `</div>`;
+  el.innerHTML = h;
+}
+
+function togR(k, expId, id) {
+  S.ins[expId][k][id] = !S.ins[expId][k][id];
+  rInsignias(); rVisao(); renderHome();
+}
+
+function rHistorico() {
+  const el = document.getElementById('tp-historico'); if(!el) return;
+  let h = `<div class="section-title">📅 Histórico de Reuniões</div>`;
+  if(!S.sessions.length) { h += `<p style="color:#ccc;text-align:center;padding:2rem">Sem reuniões ainda.</p>`; el.innerHTML=h; return; }
+  S.sessions.forEach((s,i) => {
+    h += `<div class="history-item">
+      <div class="history-header" onclick="togH(${i})">
+        <span>📋 ${s.desc} — ${fd(s.data)}</span>
+        <div style="display:flex;align-items:center;gap:0.6rem">
+          <button onclick="event.stopPropagation();openEditSession(${i})" style="background:var(--verde);color:white;border:none;border-radius:10px;padding:4px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+          <span id="ha${i}">▼</span>
+        </div>
+      </div>
+      <div class="history-body" id="hb${i}">
+        <table class="avalia-table">
+          <thead><tr><th>Explorador</th><th>📅</th><th>✅</th><th>🧣</th><th>⭐</th></tr></thead><tbody>`;
+    EXP.forEach(e => {
+      const a = s.av[e.id]; if(!a) return;
+      h += `<tr><td><div class="nome-cell"><span>${e.emoji}</span>${e.nome}</div></td>
+        <td>${a.p?'✅':'❌'}</td><td>${a.t?'✅':'❌'}</td><td>${a.l?'✅':'❌'}</td>
+        <td>${'⭐'.repeat(a.c)}</td></tr>`;
+    });
+    h += `</tbody></table></div></div>`;
+  });
+  el.innerHTML = h;
+}
+function togH(i) {
+  const b=document.getElementById('hb'+i), a=document.getElementById('ha'+i);
+  if(!b) return;
+  const v = b.style.display!=='block';
+  b.style.display=v?'block':'none';
+  if(a) a.textContent=v?'▲':'▼';
+}
+
+// --- EDITAR REUNIÃO ---
+let editIdx = null;
+let editSess = {};
+
+function openEditSession(i) {
+  editIdx = i;
+  const s = S.sessions[i];
+  editSess = { data: s.data, desc: s.desc, av: JSON.parse(JSON.stringify(s.av)) };
+  document.getElementById('edit-title').textContent = '✏️ Editar — ' + s.desc;
+  document.getElementById('edit-data').value = s.data;
+  document.getElementById('edit-desc').value = s.desc;
+  document.getElementById('edit-overlay').style.display = 'flex';
+  renderEditRows();
+}
+
+function closeEditSession() {
+  document.getElementById('edit-overlay').style.display = 'none';
+  editIdx = null; editSess = {};
+}
+
+function renderEditRows() {
+  const tb = document.getElementById('edit-tbody'); if(!tb) return;
+  tb.innerHTML = '';
+  EXP.forEach(e => {
+    const a = editSess.av[e.id] || {p:false,t:false,l:false,c:0};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="nome-cell"><span style="font-size:18px">${e.emoji}</span>${e.nome}</div></td>
+      <td><button class="toggle-btn ${a.p?'on':'off'}" id="ep${e.id}" onclick="togEdit('${e.id}','p','ep${e.id}')"></button></td>
+      <td><button class="toggle-btn ${a.t?'on':'off'}" id="et${e.id}" onclick="togEdit('${e.id}','t','et${e.id}')"></button></td>
+      <td><button class="toggle-btn ${a.l?'on':'off'}" id="el${e.id}" onclick="togEdit('${e.id}','l','el${e.id}')"></button></td>
+      <td><div class="stars-input" id="es${e.id}">${editStars(e.id, a.c)}</div></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function editStars(id, v) {
+  let h='';
+  for(let i=1;i<=5;i++) h+=`<button class="star-btn" onclick="setEditStar('${id}',${i})">${i<=v?'⭐':'☆'}</button>`;
+  return h;
+}
+function setEditStar(id, v) { editSess.av[id].c=v; const c=document.getElementById('es'+id); if(c) c.innerHTML=editStars(id,v); }
+function togEdit(id, k, btnId) {
+  editSess.av[id][k] = !editSess.av[id][k];
+  const b=document.getElementById(btnId); if(b) b.className='toggle-btn '+(editSess.av[id][k]?'on':'off');
+}
+
+function saveEditSession() {
+  if(editIdx === null) return;
+  S.sessions[editIdx] = {
+    data: document.getElementById('edit-data').value || editSess.data,
+    desc: document.getElementById('edit-desc').value || editSess.desc,
+    av:   JSON.parse(JSON.stringify(editSess.av))
+  };
+  closeEditSession();
+  rHistorico();
+  rVisao();
+  renderHome();
+  toast('✅ Reunião atualizada!');
+}
+
+// --- EXPLORADOR ---
+function enterExp(id, tabInicial) {
+  S.perfil='explorador'; S.expId=id;
+  const e = EXP.find(x=>x.id===id);
+  setHeader(e.emoji, e.nome, 'Explorador');
+  buildTabs([
+    {id:'prog',     lbl:`${e.emoji} Progressão`},
+    {id:'grafico',  lbl:'📈 Gráfico'},
+    {id:'natacao',  lbl:'🏊 Natação'},
+    {id:'artista',  lbl:'🎨 Artista'},
+    {id:'estrela3', lbl:'⭐ 3ª Estrela'},
+  ]);
+  rProgressao(id);
+  tabCallbacks['grafico'] = () => rGraficoExp(id);
+  rNatacaoView(id);
+  rInsView('artista', id);
+  rInsView('estrela3', id);
+  const tab = tabInicial || 'prog';
+  showTab(tab);
+  // activar botão nav correcto via _tabId
+  document.querySelectorAll('.nav-tab').forEach(b => {
+    b.classList.remove('active');
+    if(b._tabId === tab) b.classList.add('active');
+  });
+}
+
+function rProgressao(id) {
+  const el = document.getElementById('tp-prog'); if(!el) return;
+  const e = EXP.find(x=>x.id===id);
+  const st = stats(id);
+  const tot = S.sessions.length;
+  const pA = prog(id,'artista'), pE = prog(id,'estrela3');
+
+  let h = `
+  <div style="text-align:center;padding:1rem 0 1.5rem">
+    <div style="font-size:68px;animation:float 3s ease-in-out infinite;display:block;line-height:1">${e.emoji}</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--verde-escuro);margin-top:0.4rem">${e.nome}</div>
+    <div style="font-size:12px;color:#bbb;margin-top:3px">Explorador · Adventistas</div>
+  </div>
+  <div class="prog-cards">
+    <div class="prog-card"><div class="prog-emoji">📅</div><div class="prog-val">${st.p}<span style="font-size:12px;color:#ccc">/${tot}</span></div><div class="prog-lbl">Presenças</div></div>
+    <div class="prog-card"><div class="prog-emoji">✅</div><div class="prog-val">${st.t}</div><div class="prog-lbl">Tarefas</div></div>
+    <div class="prog-card"><div class="prog-emoji">🧣</div><div class="prog-val">${st.l}</div><div class="prog-lbl">Lenço</div></div>
+    <div class="prog-card"><div class="prog-emoji">⭐</div><div class="prog-val">${st.c}</div><div class="prog-lbl">Comp. médio</div></div>
+  </div>
+  <div class="card-form">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:0.9rem">🏅 Insígnias</div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-lbl"><span>🏊 Natação</span><span style="color:var(--verde)">✅ Concluída!</span></div>
+      <div class="prog-bar"><div class="prog-bar-fill" style="width:100%"></div></div>
+    </div>
+    <div style="height:8px"></div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-lbl"><span>🎨 Artista</span><span>${pA}%</span></div>
+      <div class="prog-bar"><div class="prog-bar-fill" style="width:${pA}%"></div></div>
+    </div>
+    <div style="height:8px"></div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-lbl"><span>⭐ 3ª Estrela</span><span>${pE}%</span></div>
+      <div class="prog-bar"><div class="prog-bar-fill" style="width:${pE}%"></div></div>
+    </div>
+  </div>
+  <div class="my-history">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:0.9rem">📋 As minhas reuniões</div>`;
+  if(!S.sessions.length) h += `<p style="color:#ccc;font-size:13px">Ainda sem reuniões.</p>`;
+  S.sessions.forEach(s => {
+    const a = s.av[id]; if(!a) return;
+    h += `<div class="session-row">
+      <span class="session-date">${fd(s.data)}</span>
+      <span style="flex:1;color:#888;font-size:11px">${s.desc}</span>
+      <div style="display:flex;gap:3px;align-items:center">
+        <div class="mini-badge ${a.p?'ok':'nok'}">${a.p?'📅':'🚫'}</div>
+        <div class="mini-badge ${a.t?'ok':'nok'}">${a.t?'✅':'❌'}</div>
+        <div class="mini-badge ${a.l?'ok':'nok'}">${a.l?'🧣':'❌'}</div>
+        <span style="font-size:11px">${'⭐'.repeat(a.c)}</span>
+      </div>
+    </div>`;
+  });
+  h += `</div>`;
+  el.innerHTML = h;
+}
+
+function rNatacaoView(id) {
+  const el = document.getElementById('tp-natacao'); if(!el) return;
+  el.innerHTML = `
+  <div style="background:white;border-radius:18px;padding:1.5rem;box-shadow:0 4px 16px var(--sombra);text-align:center">
+    <div style="font-size:60px;margin-bottom:0.75rem">🏊</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--verde-escuro);margin-bottom:0.5rem">Insígnia de Natação</div>
+    <div style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--verde-palido);border:2px solid var(--verde-claro);border-radius:20px;padding:8px 20px;margin-bottom:1.25rem">
+      <span style="font-size:20px">🏆</span>
+      <span style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro)">Concluída!</span>
+    </div>
+    <p style="font-size:13px;color:#aaa">Esta insígnia está completa. Parabéns!</p>
+  </div>`;
+}
+
+function rInsView(k, id) {
+  const el = document.getElementById('tp-'+k); if(!el) return;
+  const ins = INS[k];
+  const pr = prog(id, k);
+  const tot = countR(k);
+  const dn = Math.round(pr * tot / 100);
+
+  let h = `
+  <div style="background:white;border-radius:18px;padding:1.1rem;box-shadow:0 4px 16px var(--sombra);margin-bottom:1.25rem;display:flex;align-items:center;gap:0.9rem">
+    <div style="font-size:36px">${ins.emoji}</div>
+    <div style="flex:1">
+      <div style="font-family:'Fredoka One',cursive;font-size:17px;color:var(--verde-escuro)">${ins.nome}</div>
+      <div style="font-size:12px;color:#bbb;margin-top:2px">${dn} de ${tot} concluídos</div>
+      <div class="prog-bar" style="margin-top:6px"><div class="prog-bar-fill" style="width:${pr}%"></div></div>
+    </div>
+    <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--verde)">${pr}%</div>
+  </div>`;
+
+  ins.reqs.forEach((r, ri) => {
+    const chk = S.ins[id][k][r.id];
+    h += `<div class="req-item ${chk?'done':''}">
+      <div class="req-check readonly ${chk?'checked':''}">${chk?'✓':''}</div>
+      <div class="req-text"><strong>${ri+1}. ${r.t}</strong></div>
+    </div>`;
+    if(r.s.length) {
+      h += `<div class="sub-req">`;
+      r.s.forEach(sub => {
+        const sc = S.ins[id][k][sub.id];
+        h += `<div class="req-item ${sc?'done':''}">
+          <div class="req-check readonly ${sc?'checked':''}">${sc?'✓':''}</div>
+          <div class="req-text">${sub.t}</div>
+        </div>`;
+      });
+      h += `</div>`;
+    }
+  });
+  el.innerHTML = h;
+}
+
+// --- GRÁFICOS MONITOR ---
+let chartBarInstance = null;
+let chartRadarInstance = null;
+
+function rGraficosMonitor() {
+  const el = document.getElementById('tp-graficos'); if(!el) return;
+  el.innerHTML = `
+  <div class="section-title">📈 Gráficos da Equipa</div>
+
+  <div class="card-form" style="margin-bottom:1.25rem">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:1rem">📊 Comparação entre Exploradores</div>
+    <div style="position:relative;height:280px">
+      <canvas id="chart-bar"></canvas>
+    </div>
+  </div>
+
+  <div class="card-form">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:1rem">🎯 Progresso das Insígnias</div>
+    <div style="position:relative;height:300px">
+      <canvas id="chart-radar"></canvas>
+    </div>
+  </div>`;
+
+
+  // Destruir instâncias anteriores se existirem
+  if(chartBarInstance) { chartBarInstance.destroy(); chartBarInstance = null; }
+  if(chartRadarInstance) { chartRadarInstance.destroy(); chartRadarInstance = null; }
+
+  const nomes = EXP.map(e => e.nome);
+  const cores = ['#f3d7ef','#d0e8f5','#f5e6d0','#d0f5dd','#f5f0d0','#d0eef5'];
+  const borderesEscuras = ['#c47ab0','#4a90d9','#d4924a','#4ab86e','#c4b84a','#4ab8d4'];
+
+  // Gráfico de barras
+  const ctxBar = document.getElementById('chart-bar');
+  if(ctxBar) {
+    chartBarInstance = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: nomes,
+        datasets: [
+          { label:'📅 Presenças', data:EXP.map(e=>stats(e.id).p), backgroundColor:'#d4edda', borderColor:'#4a8c3f', borderWidth:2, borderRadius:8 },
+          { label:'✅ Tarefas',   data:EXP.map(e=>stats(e.id).t), backgroundColor:'#d0e8f5', borderColor:'#4a90d9', borderWidth:2, borderRadius:8 },
+          { label:'🧣 Lenço',    data:EXP.map(e=>stats(e.id).l), backgroundColor:'#fff3cd', borderColor:'#e8882a', borderWidth:2, borderRadius:8 },
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'Nunito', weight:'700', size:12 }, padding:16 } } },
+        scales:{
+          x:{ grid:{display:false}, ticks:{font:{family:'Nunito',weight:'700'}} },
+          y:{ beginAtZero:true, ticks:{stepSize:1,font:{family:'Nunito'}}, grid:{color:'#f0f0e8'} }
+        }
+      }
+    });
+  }
+
+  // Gráfico de radar — progresso insígnias
+  const ctxRadar = document.getElementById('chart-radar');
+  if(ctxRadar) {
+    chartRadarInstance = new Chart(ctxRadar, {
+      type:'radar',
+      data:{
+        labels:['🏊 Natação','🎨 Artista','⭐ 3ª Estrela'],
+        datasets:EXP.map((e,i)=>({
+          label:e.nome,
+          data:[100, prog(e.id,'artista'), prog(e.id,'estrela3')],
+          backgroundColor:cores[i]+'88',
+          borderColor:borderesEscuras[i],
+          borderWidth:2,
+          pointBackgroundColor:borderesEscuras[i],
+          pointRadius:5,
+        }))
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'Nunito', weight:'700', size:11 }, padding:12 } } },
+        scales:{ r:{ min:0, max:100, ticks:{stepSize:25,font:{family:'Nunito',size:10},backdropColor:'transparent'}, grid:{color:'#e0e8d8'}, pointLabels:{font:{family:'Nunito',weight:'700',size:12}} } }
+      }
+    });
+  }
+}
+
+// --- GRÁFICO EXPLORADOR ---
+let chartLineInstance = null;
+
+function rGraficoExp(id) {
+  const el = document.getElementById('tp-grafico'); if(!el) return;
+  const e = EXP.find(x=>x.id===id);
+
+  // Sessões em ordem cronológica
+  const sessOrdenadas = [...S.sessions].reverse();
+
+  el.innerHTML = `
+  <div class="section-title">📈 A minha evolução</div>
+
+  <div class="card-form" style="margin-bottom:1.25rem">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:1rem">⭐ Comportamento por Reunião</div>
+    <div style="position:relative;height:260px">
+      <canvas id="chart-line-comp"></canvas>
+    </div>
+  </div>
+
+  <div class="card-form">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:1rem">📊 As minhas estatísticas</div>
+    <div style="position:relative;height:240px">
+      <canvas id="chart-bar-exp"></canvas>
+    </div>
+  </div>`;
+
+  if(chartLineInstance) { chartLineInstance.destroy(); chartLineInstance = null; }
+
+  const labels = sessOrdenadas.map(s => fd(s.data));
+  const compData = sessOrdenadas.map(s => s.av[id]?.p ? (s.av[id]?.c || 0) : null);
+  const presData = sessOrdenadas.map(s => s.av[id]?.p ? 1 : 0);
+  const tarData  = sessOrdenadas.map(s => s.av[id]?.t ? 1 : 0);
+  const lenData  = sessOrdenadas.map(s => s.av[id]?.l ? 1 : 0);
+
+  const ctxLine = document.getElementById('chart-line-comp');
+  if(ctxLine) {
+    chartLineInstance = new Chart(ctxLine, {
+      type:'line',
+      data:{ labels, datasets:[{ label:'Comportamento', data:compData, borderColor:'#4a8c3f', backgroundColor:'#d4edda55', borderWidth:3, tension:0.4, fill:true, pointBackgroundColor:'#2d5a27', pointRadius:6, pointHoverRadius:8, spanGaps:false }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{font:{family:'Nunito',weight:'700',size:11}}}, y:{min:0,max:5,ticks:{stepSize:1,font:{family:'Nunito'}},grid:{color:'#f0f0e8'}} } }
+    });
+  }
+
+  const ctxBarExp = document.getElementById('chart-bar-exp');
+  if(ctxBarExp) {
+    new Chart(ctxBarExp, {
+      type:'bar',
+      data:{ labels, datasets:[
+        {label:'📅 Presente', data:presData, backgroundColor:'#d4edda', borderColor:'#4a8c3f', borderWidth:2, borderRadius:6},
+        {label:'✅ Tarefa',   data:tarData,  backgroundColor:'#d0e8f5', borderColor:'#4a90d9', borderWidth:2, borderRadius:6},
+        {label:'🧣 Lenço',   data:lenData,  backgroundColor:'#fff3cd', borderColor:'#e8882a', borderWidth:2, borderRadius:6},
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{family:'Nunito',weight:'700',size:11},padding:12}}}, scales:{ x:{grid:{display:false},ticks:{font:{family:'Nunito',weight:'700',size:11}}}, y:{min:0,max:1,ticks:{stepSize:1,font:{family:'Nunito'}},grid:{color:'#f0f0e8'}} } }
+    });
+  }
+}
+
+// --- HELPERS ---
+function stats(id) {
+  let p=0,t=0,l=0,tc=0,sc=0;
+  S.sessions.forEach(s => {
+    const a=s.av[id]; if(!a) return;
+    if(a.p) p++;
+    if(a.t) t++;
+    if(a.l) l++;
+    if(a.p && a.c>0) { tc+=a.c; sc++; }
+  });
+  return {p, t, l, c: sc?(tc/sc).toFixed(1):'—'};
+}
+function prog(id, k) {
+  const d = S.ins[id]?.[k]; if(!d) return 0;
+  const v = Object.values(d);
+  return v.length ? Math.round(v.filter(Boolean).length/v.length*100) : 0;
+}
+function countR(k) {
+  let n=0; INS[k].reqs.forEach(r=>{n++; n+=r.s.length;}); return n;
+}
+function fd(d) { const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// --- PERSISTÊNCIA ---
+const LS_KEY = 'exploradores_v1';
+
+function saveData() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({sessions:S.sessions, ins:S.ins})); }
+  catch(e) {}
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d.sessions) S.sessions = d.sessions;
+    if(d.ins) {
+      EXP.forEach(e => {
+        if(!d.ins[e.id]) return;
+        ['artista','estrela3'].forEach(k => {
+          if(d.ins[e.id][k]) S.ins[e.id][k] = d.ins[e.id][k];
+        });
+      });
+    }
+  } catch(e) {}
+}
+
+// Wrapper auto-save em todas as funções que alteram dados
+const _guardar_orig = guardar;
+guardar = function() { _guardar_orig(); saveData(); };
+
+const _saveEdit_orig = saveEditSession;
+saveEditSession = function() { _saveEdit_orig(); saveData(); };
+
+const _togR_orig = togR;
+togR = function(k, expId, id) { _togR_orig(k, expId, id); saveData(); };
+
+loadData();
+renderHome();
+</script>
+</body>
+</html>
