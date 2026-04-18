@@ -955,6 +955,10 @@ function rHistorico() {
         <span>📋 ${s.desc} — ${fd(s.data)}</span>
         <div style="display:flex;align-items:center;gap:0.6rem">
           <button onclick="event.stopPropagation();openEditSession(${i})" style="background:var(--verde);color:white;border:none;border-radius:10px;padding:4px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+          <button onclick="event.stopPropagation();deleteSession(${i})" 
+style="background:#c44;color:white;border:none;border-radius:10px;padding:4px 12px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer">
+🗑️ Apagar
+</button>
           <span id="ha${i}">▼</span>
         </div>
       </div>
@@ -1349,6 +1353,23 @@ function toast(msg) {
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3000);
+}
+  // ---Apagar ---
+  function deleteSession(index) {
+  const sess = S.sessions[index];
+  if(!sess || !sess.id) return;
+
+  const confirmacao = confirm("Tem a certeza que pretende apagar esta reunião?");
+  if(!confirmacao) return;
+
+  db.collection("sessoes").doc(sess.id).delete()
+    .then(() => {
+      toast('🗑️ Reunião apagada!');
+    })
+    .catch(err => {
+      console.error(err);
+      toast('❌ Erro ao apagar');
+    });
 }
 
 // --- PERSISTÊNCIA ---
