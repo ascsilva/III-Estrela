@@ -520,7 +520,7 @@ function renderHome() {
 function calcPontos(id) {
   let total = 0;
   S.sessions.forEach(s => {
-    const a = s.av[id] || {p:false,t:false,l:false,c:0} || {p:false,t:false,l:false,c:0} || {p:false,t:false,l:false,c:0};    if(a.p) total += 2;
+    const a = s.av[id] || {p:false,t:false,l:false,c:0};    if(a.p) total += 2;
     if(a.t) total += 2;
     if(a.l) total += 1;
     if(a.p && a.c > 0) total += a.c;
@@ -1126,7 +1126,7 @@ function rProgressao(id) {
     <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:0.9rem">📋 As minhas reuniões</div>`;
   if(!S.sessions.length) h += `<p style="color:#ccc;font-size:13px">Ainda sem reuniões.</p>`;
   S.sessions.forEach(s => {
-    const a = s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}); if(!a) return;
+    const a = s.av[id] || {p:false,t:false,l:false,c:0}; if(!a) return;
     h += `<div class="session-row">
       <span class="session-date">${fd(s.data)}</span>
       <span style="flex:1;color:#888;font-size:11px">${s.desc}</span>
@@ -1307,7 +1307,7 @@ function rGraficoExp(id) {
   if(chartLineInstance) { chartLineInstance.destroy(); chartLineInstance = null; }
 
   const labels = sessOrdenadas.map(s => fd(s.data));
-  const compData = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.p ? (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.c || 0) : null);
+  const compData = sessOrdenadas.map(s => {   const a = s.av[id] || {p:false,t:false,l:false,c:0};   return a.p ? a.c : null; });  const presData = sessOrdenadas.map(s => {   const a = s.av[id] || {p:false,t:false,l:false,c:0};   return a.p ? 1 : 0; });  const tarData = sessOrdenadas.map(s => {   const a = s.av[id] || {p:false,t:false,l:false,c:0};   return a.t ? 1 : 0; });  const lenData = sessOrdenadas.map(s => {   const a = s.av[id] || {p:false,t:false,l:false,c:0};   return a.l ? 1 : 0; });
   const presData = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.p ? 1 : 0);
   const tarData  = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.t ? 1 : 0);
   const lenData  = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.l ? 1 : 0);
@@ -1339,7 +1339,7 @@ function rGraficoExp(id) {
 function stats(id) {
   let p=0,t=0,l=0,tc=0,sc=0;
   S.sessions.forEach(s => {
-    const a=(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}); if(!a) return;
+    const a = s.av[id] || {p:false,t:false,l:false,c:0}; if(!a) return;
     if(a.p) p++;
     if(a.t) t++;
     if(a.l) l++;
