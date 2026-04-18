@@ -32,7 +32,7 @@ function carregarInsignias() {
     snapshot.forEach(doc => {
   const data = doc.data();
   data.id = doc.id; // 🔥 guardar ID do Firebase
-  S.sessions.push(data);
+  S.ins[doc.id] = data;
 });
 
     rInsignias();
@@ -520,7 +520,7 @@ function renderHome() {
 function calcPontos(id) {
   let total = 0;
   S.sessions.forEach(s => {
-    const a = (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0};    if(a.p) total += 2;
+    const a = s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0};    if(a.p) total += 2;
     if(a.t) total += 2;
     if(a.l) total += 1;
     if(a.p && a.c > 0) total += a.c;
@@ -836,17 +836,20 @@ function rRows() {
 }
 
 function tog(id, k, btnId) {
-  curSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})[k] = !curSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})[k];
+  curSess.av[id][k] = !curSess.av[id][k];
   const b = document.getElementById(btnId);
-  if(b) b.className = 'toggle-btn '+(curSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})[k]?'on':'off');
+  if(b) b.className = 'toggle-btn ' + (curSess.av[id][k] ? 'on' : 'off');
 }
 function starsH(id, v) {
   let h='';
   for(let i=1;i<=5;i++) h+=`<button class="star-btn" onclick="setStar('${id}',${i})">${i<=v?'⭐':'☆'}</button>`;
   return h;
 }
-function setStar(id, v) { curSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}).c=v; const c=document.getElementById('st'+id); if(c) c.innerHTML=starsH(id,v); }
-
+function setStar(id, v) { 
+  curSess.av[id].c = v;
+  const c = document.getElementById('st'+id);
+  if(c) c.innerHTML = starsH(id, v);
+}
 function guardar() {
   const novaSessao = {
     data: curSess.data || new Date().toISOString().split('T')[0],
@@ -1023,10 +1026,15 @@ function editStars(id, v) {
   for(let i=1;i<=5;i++) h+=`<button class="star-btn" onclick="setEditStar('${id}',${i})">${i<=v?'⭐':'☆'}</button>`;
   return h;
 }
-function setEditStar(id, v) { editSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}).c=v; const c=document.getElementById('es'+id); if(c) c.innerHTML=editStars(id,v); }
-function togEdit(id, k, btnId) {
-  editSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})[k] = !editSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})[k];
-  const b=document.getElementById(btnId); if(b) b.className='toggle-btn '+(editSes(s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})[k]?'on':'off');
+function setEditStar(id, v) { 
+  editSess.av[id].c = v;
+  const c = document.getElementById('es'+id);
+  if(c) c.innerHTML = editStars(id, v);
+}
+  function togEdit(id, k, btnId) {
+  editSess.av[id][k] = !editSess.av[id][k];
+  const b = document.getElementById(btnId);
+  if(b) b.className = 'toggle-btn ' + (editSess.av[id][k] ? 'on' : 'off');
 }
 
 function saveEditSession() {
@@ -1118,7 +1126,7 @@ function rProgressao(id) {
     <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--verde-escuro);margin-bottom:0.9rem">📋 As minhas reuniões</div>`;
   if(!S.sessions.length) h += `<p style="color:#ccc;font-size:13px">Ainda sem reuniões.</p>`;
   S.sessions.forEach(s => {
-    const a = (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}); if(!a) return;
+    const a = s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}); if(!a) return;
     h += `<div class="session-row">
       <span class="session-date">${fd(s.data)}</span>
       <span style="flex:1;color:#888;font-size:11px">${s.desc}</span>
