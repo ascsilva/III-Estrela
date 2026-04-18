@@ -853,15 +853,21 @@ function guardar() {
     av: JSON.parse(JSON.stringify(curSess.av))
   };
 
-  db.collection("sessoes").add(novaSessao).then(() => {
-    toast('✅ Reunião guardada!');
-  });
+  db.collection("sessoes").add(novaSessao)
+    .then(() => {
+      toast('✅ Reunião guardada!');
+    })
+    .catch(err => {
+      console.error(err);
+      toast('❌ Erro ao guardar');
+    });
 
+  // limpar UI
   initCurSess();
   rRows();
-  const d=document.getElementById('sdesc'); if(d) d.value='';
+  const d = document.getElementById('sdesc');
+  if(d) d.value = '';
 }
-
 function rInsignias() {
   const el = document.getElementById('tp-insignias'); if(!el) return;
   const k = monInsKey;
