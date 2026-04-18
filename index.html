@@ -520,7 +520,7 @@ function renderHome() {
 function calcPontos(id) {
   let total = 0;
   S.sessions.forEach(s => {
-    const a = s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0};    if(a.p) total += 2;
+    const a = (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0};    if(a.p) total += 2;
     if(a.t) total += 2;
     if(a.l) total += 1;
     if(a.p && a.c > 0) total += a.c;
