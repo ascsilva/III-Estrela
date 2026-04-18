@@ -10,7 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
-<!--chatGPT-->
+// chatGPT
 function carregarDados() {
   db.collection("sessoes").orderBy("data", "desc").onSnapshot(snapshot => {
     S.sessions = [];
@@ -27,19 +27,20 @@ function carregarDados() {
     renderHome();
   });
 }
+
 function carregarInsignias() {
   db.collection("insignias").onSnapshot(snapshot => {
     snapshot.forEach(doc => {
-  const data = doc.data();
-  data.id = doc.id; // 🔥 guardar ID do Firebase
-  S.ins[doc.id] = data;
-});
+      const data = doc.data();
+      data.id = doc.id;
+      S.ins[doc.id] = data;
+    });
 
     rInsignias();
     renderHome();
   });
 }
-<!--fim-->
+// fim
 
 const firebaseConfig = {
   apiKey: "AIzaSyCxi5c6MZWUy1fhm8T33Q41SCstxVOz70g",
