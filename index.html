@@ -30,8 +30,10 @@ function carregarDados() {
 function carregarInsignias() {
   db.collection("insignias").onSnapshot(snapshot => {
     snapshot.forEach(doc => {
-      S.ins[doc.id] = doc.data();
-    });
+  const data = doc.data();
+  data.id = doc.id; // 🔥 guardar ID do Firebase
+  S.sessions.push(data);
+});
 
     rInsignias();
     renderHome();
@@ -1026,16 +1028,25 @@ function togEdit(id, k, btnId) {
 
 function saveEditSession() {
   if(editIdx === null) return;
-  S.sessions[editIdx] = {
+
+  const sessao = {
     data: document.getElementById('edit-data').value || editSess.data,
     desc: document.getElementById('edit-desc').value || editSess.desc,
-    av:   JSON.parse(JSON.stringify(editSess.av))
+    av: JSON.parse(JSON.stringify(editSess.av))
   };
+
+  const id = S.sessions[editIdx].id;
+
+  db.collection("sessoes").doc(id).update(sessao)
+    .then(() => {
+      toast('✅ Reunião atualizada!');
+    })
+    .catch(err => {
+      console.error(err);
+      toast('❌ Erro ao atualizar');
+    });
+
   closeEditSession();
-  rHistorico();
-  rVisao();
-  renderHome();
-  toast('✅ Reunião atualizada!');
 }
 
 // --- EXPLORADOR ---
