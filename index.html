@@ -1307,7 +1307,7 @@ function rGraficoExp(id) {
   if(chartLineInstance) { chartLineInstance.destroy(); chartLineInstance = null; }
 
   const labels = sessOrdenadas.map(s => fd(s.data));
-  const compData = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.p ? ((s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.c || 0) : null);
+  const compData = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.p ? (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.c || 0) : null);
   const presData = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.p ? 1 : 0);
   const tarData  = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.t ? 1 : 0);
   const lenData  = sessOrdenadas.map(s => (s.av[id] || {p:false,t:false,l:false,c:0}) || {p:false,t:false,l:false,c:0})?.l ? 1 : 0);
